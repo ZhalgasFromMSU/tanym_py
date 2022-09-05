@@ -1,1 +1,1 @@
-# tanym_py
+# Chat bot for Tanym project

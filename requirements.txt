@@ -1,0 +1,4 @@
+pytelegrambotapi
+sqlalchemy
+psycopg2
+openpyxl

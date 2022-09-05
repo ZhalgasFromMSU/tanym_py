@@ -1,0 +1,22 @@
+version: "3.7"
+
+services:
+  tanym:
+    image: python:3.9
+    command: sh -c "pip3 install -r requirements.txt && python3 main.py"
+    working_dir: /tanym
+    volumes:
+      - ./:/tanym
+    environment:
+      BOT_TOKEN: $BOT_TOKEN
+      DB_RECIPE: postgresql://postgres:123456@db:5432/postgres
+
+  db:
+    image: postgres
+    volumes:
+      - database:/usr/local/var/postgres
+    environment:
+      POSTGRES_PASSWORD: 123456
+
+volumes:
+  database:
