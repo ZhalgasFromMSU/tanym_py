@@ -101,7 +101,7 @@ class PsychologistMatcher:
         assert assignment is not None
         self._bot.edit_message_reply_markup(callback.message.chat.id, callback.message.id)
         if callback.data.endswith("didnt_write"):
-            self._bot.send_message(assignment.client_chat_id, "Вы не написали психологу")
+            self._bot.send_message(assignment.client_chat_id, "Вы не подтвердили запись у психолога, поэтому ваш запрос отклонен")
             self._db_connector.remove_client_assignment_infos(assignment.client_chat_id)
         else:  # finished
             self._bot.send_message(assignment.client_chat_id, texts.ASK_REVIEW_SCORE_TEXT, reply_markup=ClientReviewScoresCallback.keyboard())
@@ -110,6 +110,12 @@ class PsychologistMatcher:
         assignment = self._db_connector.lookup_assignment_info_by_client(callback.message.chat.id)
         if assignment is None:
             return
+
+        client = self._db_connector.lookup_client(assignment.client_chat_id)
+        psychologist = self._db_connector.lookup_psychologists_by_chat(assignment.ps_chat_id)
+        if int(callback.data.split('_')[-1]) < 3:
+            for admin in self._db_connector.list_admins():
+                self._bot.send_message(admin.admin_chat_id, f"Клиент: {client.name}\nПсихолог: {psychologist.name}\nОценка: {score}")
 
         msg = self._bot.send_message(assignment.client_chat_id, "Для улучшения процессов нам очень важна ваша обратная связь, поэтому, пожалуйста, оставьте развернутый отзыв")
         self._bot.register_next_step_handler(msg, functools.partial(self._process_review, int(callback.data.split('_')[-1])))
@@ -123,8 +129,9 @@ class PsychologistMatcher:
             )
         )
         assignment = self._db_connector.lookup_assignment_info_by_client(message.chat.id)
+        client = self._db_connector.lookup_client(assignment.client_chat_id)
         psychologist = self._db_connector.lookup_psychologists_by_chat(assignment.ps_chat_id)
         self._bot.send_message(message.chat.id, "Спасибо! Были рады вам помочь")
         if score < 3:
             for admin in self._db_connector.list_admins():
-                self._bot.send_message(admin.admin_chat_id, f"Психолог: {psychologist.name}\nОценка: {score}\nОтзыв: {message.text}")
+                self._bot.send_message(admin.admin_chat_id, f"Клиент: {client.name}\nПсихолог: {psychologist.name}\nОценка: {score}\nОтзыв: {message.text}")

@@ -39,7 +39,7 @@ class ClientModel(Base):
             f"Имя: {self.name}",
             f"Возраст: {self.age}",
             f"Город: {self.city}",
-            f"Тип проблемы: {self.pr_type}",
+            f"Тип проблемы: {texts.PROBLEM_TYPES_STR[int(self.pr_type)]}",
             f"Описание: {self.pr_descr}",
         ])
 
