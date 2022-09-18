@@ -20,16 +20,18 @@ class ConversationHandler:
     __slots__ = [
         "_bot",
         "_admins",
+        "_psychologists",
         "_answers",
         "_last_q_wo_callback_in_conv",
         "_conversation_pool",
     ]
 
-    def __init__(self, bot: telebot.TeleBot, admins: list[str]):
+    def __init__(self, bot: telebot.TeleBot, admins: list[str], psychologists: list[str]):
         self._bot: telebot.TeleBot = bot
         self._answers: dict[int, dict] = defaultdict(dict)  # chat_id -> client description
         self._conversation_pool: list[ConversationSelector] = []
         self._admins: set[str] = admins
+        self._psychologists: set[str] = psychologists
 
         self._last_q_wo_callback_in_conv: dict[int, int] = defaultdict(lambda: 0)
 
@@ -44,6 +46,7 @@ class ConversationHandler:
         self._conversation_pool.append(ConversationSelector(conversation, callback, path_filter))
 
     def _start_conversation(self, message: types.Message):
+        assert len(self._conversation_pool) == 1
         if message.from_user.username in self._admins:
             self._bot.send_message(message.chat.id, "Вы администратор. Вы можете вводить две команды:\n/dump - скачать базу в Excel\n/add {имя пользователя}")
             return

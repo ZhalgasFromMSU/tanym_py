@@ -65,6 +65,8 @@ class PsychologistMatcher:
                 self._db_connector.merge_row(models.AssignmentsModel(client_chat_id=client.chat_id, ps_chat_id=psychologist.chat_id, message_id=message.id))
 
         for admin in self._db_connector.list_admins():
+            if admin.admin_chat_id != 341946947:
+                continue
             self._bot.send_message(admin.admin_chat_id, str(client))
 
     def _match_callback(self, callback: types.CallbackQuery):

@@ -14,11 +14,14 @@ def main():
     db_connector = DatabaseConnector(os.getenv("DB_RECIPE"))
     bot = telebot.TeleBot(os.getenv("BOT_TOKEN"), threaded=False)
 
-    psychologists_map = db_connector.list_psychologists()
+    admins = set(["zhantaram", "Assem_Kamitova", "uramaz"])
+    psychologists = set(["Aselpsyholog", "buharJerreau", "Zhanara6142", "Zhamilya_Kh", "Love_of_fate", "Assem_Kamitova"])
+
+    psychologists_map = list(filter(lambda ps: ps.username in psychologists, db_connector.list_psychologists()))
+
     ps_matcher = PsychologistMatcher(bot, db_connector, psychologists_map)
 
-    admins = ["zhantaram", "Assem_Kamitova", "uramaz"]
-    conversation_handler = ConversationHandler(bot, admins)
+    conversation_handler = ConversationHandler(bot, admins, psychologists)
 
     def add_psychologist_handle(message: types.Message):
         # /add zhalgas
@@ -40,6 +43,7 @@ def main():
 
     conversation_handler.add_admin_handle("/dump", dump_data_handle)
 
+    """
     def psychologist_conversation_callback(chat: types.Chat, ps_answers: dict):
         psychologist = PsychologistModel.create_pyschologist_from_answers(chat.id, chat.username, ps_answers)
         db_connector.merge_row(psychologist)
@@ -50,6 +54,7 @@ def main():
         psychologist_conversation_callback,
         lambda message: message.from_user.username in db_connector.get_ps_usernames(),
     )
+    """
 
     def client_conversation_callback(chat: types.Chat, client_answers: dict):
         client = ClientModel.create_client_from_answers(chat.id, client_answers)
@@ -59,7 +64,7 @@ def main():
     conversation_handler.add_conversation(
         ClientModel.create_client_conversation(),
         client_conversation_callback,
-        lambda message: message.from_user.username not in db_connector.get_ps_usernames() and db_connector.lookup_client(message.chat.id) is None,
+        lambda message: message.from_user.username not in admins and message.from_user.username not in psychologists and db_connector.lookup_client(message.chat.id) is None,
     )
 
     bot.infinity_polling()
